@@ -11,7 +11,6 @@ const doodleEdge = 16;
 
 window.addEventListener("load", async (_) => {
     const posts = await loadPosts();
-    console.log(posts);
     const contents = document.getElementById("contents");
     if (!contents) throw new Error("content div not found");
     renderPosts(posts, contents);
@@ -21,7 +20,6 @@ window.addEventListener("load", async (_) => {
 async function loadPosts() {
     const yyMmDd = new Date().toISOString().slice(2, 10); // "23-02-22"
     const reqUrl = baseUrl + yyMmDd;
-    console.log(reqUrl)
     return await fetch(reqUrl)
         .then(res => res.json())
         .catch(err => {
