@@ -1,0 +1,13 @@
+body {
+    background-color: #fafafa;
+    color: #333;
+}
+
+.postContainer {
+    padding: 1rem 0;
+    margin: 1rem 0;
+}
+
+.postContainer > canvas {
+    border: 1px solid black;
+}

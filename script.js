@@ -1,8 +1,8 @@
 /**
  * The response object from Dynamo.
  * @typedef {Object} DoodleItem
- * @property {string} createdDate
- * @property {string} yyMmDd
+ * @property {string} createddate
+ * @property {string} yy-mm-dd
  * @property {string} drawing
  */
 
@@ -38,10 +38,19 @@ function renderPosts(posts, containerElement) {
     const pxSize = ~~(canvEdgeLen / doodleEdge);
 
     for (const post of posts) {
+        const postContainer = document.createElement("div");
+        postContainer.classList.add("postContainer", "row");
+        postContainer.style.textAlign = "center";
+
+        const caption = document.createElement("h5");
+        caption.innerText = post["yy-mm-dd"] + "/" + post.createddate;
+
         const canvas = document.createElement("canvas");
         canvas.width = canvEdgeLen;
         canvas.height = canvEdgeLen;
         const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, canvEdgeLen, canvEdgeLen);
         ctx.fillStyle = "#000";
 
         // const bufferCanvas = document.createElement("canvas");
@@ -64,7 +73,8 @@ function renderPosts(posts, containerElement) {
                 );
             }
         }
-
-        containerElement.appendChild(canvas);
+        postContainer.appendChild(canvas);
+        postContainer.appendChild(caption);
+        containerElement.appendChild(postContainer);
     }
 }
