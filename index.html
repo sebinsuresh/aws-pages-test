@@ -31,11 +31,13 @@
       <div class="row" style="text-align: center">
         <h1>Da Posts</h1>
       </div>
+      <div id="drawingModal">
+        <canvas width="320" height="320" id="drawingCanvas"></canvas>
+        <button id="cancelDrawButton" disabled>Cancel</button>
+        <button id="resetDrawButton">Reset</button>
+        <button id="postButton">Post</button>
+      </div>
       <div class="content" id="contents"></div>
-    </div>
-    <div class="drawer">
-      <canvas width="640" height="640" id="drawingCanvas"></canvas>
-      <button id="postButton">Post</button>
     </div>
     <script src="script.js"></script>
   </body>
