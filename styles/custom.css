@@ -11,3 +11,19 @@ body {
 .postContainer > canvas {
     border: 1px solid black;
 }
+
+#drawingModal {
+    text-align: center;
+}
+
+#drawingCanvas {
+    border: 1px solid black;
+    display: block;
+    margin: 1rem auto;
+}
+
+button:disabled {
+    color: #555;
+    background-color: silver;
+    border: 1px solid #bbb;
+}
