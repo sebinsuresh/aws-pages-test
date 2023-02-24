@@ -13,7 +13,9 @@ window.addEventListener("load", async (_) => {
     const posts = await loadPosts();
     const contents = document.getElementById("contents");
     if (!contents) throw new Error("content div not found");
-    renderPosts(posts, contents);
+
+    if (posts.length) renderPosts(posts, contents);
+    else contents.innerText = "No content yet :(";
 });
 
 /** @returns {DoodleItem[]} */
