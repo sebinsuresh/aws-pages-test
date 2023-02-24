@@ -27,3 +27,8 @@ button:disabled {
   background-color: silver;
   border: 1px solid #bbb;
 }
+
+button {
+  /* Prevent iOS zooming in on double taps */
+  touch-action: manipulation;
+}
