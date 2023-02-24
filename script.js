@@ -7,41 +7,82 @@
  */
 
 const baseUrl = "https://758js4xuaf.execute-api.us-east-2.amazonaws.com/doodles";
+const canvEdgeLen = 320;
 const doodleEdge = 16;
+const pxSize = ~~(canvEdgeLen / doodleEdge);
+
+/** @type {DoodleItem[]} */
+let posts = [];
 
 window.addEventListener("load", async (_) => {
     initializeDrawingCanvas();
 
-    const posts = await loadPosts();
+    posts = await loadPosts();
 
-    const contents = document.getElementById("contents");
-    if (!contents) throw new Error("content div not found");
-
-    if (posts.length) renderPosts(posts, contents);
+    if (posts?.length) renderPosts();
     else contents.innerText = "No content yet :(";
 });
 
 function initializeDrawingCanvas() {
-    const drawingCanvas = document.getElementById("drawingCanvas");
-    // Access using drawingCanvas.dataset.drawing
-    drawingCanvas.setAttribute("data-drawing", "0".repeat(doodleEdge * doodleEdge));
+    const initialDrawing = generateRandomDrawing();
+    drawToDrawingCanvas(initialDrawing);
 
     const postButton = document.getElementById("postButton");
     postButton.addEventListener("click", handlePostButton);
+
+    // TODO: Implement modal and close function on cancel button
+    // const cancelButton = document.getElementById("cancelDrawButton");
+    // cancelButton.addEventListener("click", handleCancelButton);
+
+    const resetButton = document.getElementById("resetDrawButton");
+    resetButton.addEventListener("click", handleResetButton);
+}
+
+/** @returns {string} */
+function generateRandomDrawing() {
+    let drawing = "";
+    for (let i = 0; i < doodleEdge * doodleEdge; i++) {
+        // drawing += "0";
+        drawing += Math.random() > 0.5 ? "1" : "0";
+    }
+    return drawing;
+}
+
+/**
+ * @param {string} drawing
+ */
+function drawToDrawingCanvas(drawing) {
+    const drawingCanvas = document.getElementById("drawingCanvas");
+    // Access using drawingCanvas.dataset.drawing
+    drawingCanvas.setAttribute("data-drawing", drawing);
+    drawToContext(drawingCanvas.getContext("2d"), drawing);
+}
+
+function handleResetButton() {
+    drawToDrawingCanvas(generateRandomDrawing());
 }
 
 async function handlePostButton() {
+    const drawing = drawingCanvas.dataset.drawing;
     const response = await fetch(baseUrl, {
         method: "PUT",
-        body: JSON.stringify({ drawing: drawingCanvas.dataset.drawing + "avbc" }),
+        body: JSON.stringify({ drawing: drawing }),
         headers: {
             'Content-Type': 'application/json'
         },
-    }).then(res => res.json()
-    ).catch(err => {
+    }).catch(err => {
         console.error(err);
     });
-    console.log(response);
+
+    /** @type {DoodleItem | string} */
+    const responseBody = await response.json();
+    if (response.ok) {
+        posts.push(responseBody);
+        renderPosts();
+        handleResetButton();
+    } else {
+        console.error(responseBody);
+    }
 }
 
 /** @returns {Promise<DoodleItem[]>} */
@@ -51,19 +92,20 @@ async function loadPosts() {
     return await fetch(reqUrl)
         .then(res => res.json())
         .catch(err => {
-            console.error("Couldn't fetch records or parse body");
+            console.error("Couldn't fetch records or parse body", err);
         });
 }
 
-/**
- * @param {DoodleItem[]} posts
- * @param {HTMLElement} containerElement 
-*/
-function renderPosts(posts, containerElement) {
-    const canvEdgeLen = 640;
-    const pxSize = ~~(canvEdgeLen / doodleEdge);
+function renderPosts() {
+    const containerElement = document.getElementById("contents");
+    if (!containerElement) throw new Error("content div not found");
 
-    for (const post of posts) {
+    // TODO: Make the posts show up without removing all elements
+    containerElement.innerHTML = '';
+
+    // Show posts in reverse order
+    for (let i = posts.length - 1; i >= 0; i--) {
+        const post = posts[i];
         const postContainer = document.createElement("div");
         postContainer.classList.add("postContainer", "row");
         postContainer.style.textAlign = "center";
@@ -75,32 +117,44 @@ function renderPosts(posts, containerElement) {
         canvas.width = canvEdgeLen;
         canvas.height = canvEdgeLen;
         const ctx = canvas.getContext("2d");
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(0, 0, canvEdgeLen, canvEdgeLen);
-        ctx.fillStyle = "#000";
 
-        // const bufferCanvas = document.createElement("canvas");
-        // bufferCanvas.width = doodleEdge;
-        // bufferCanvas.height = doodleEdge;
-        // const bufferCtx = bufferCanvas.getContext("2d");
-        // const bufferCnvImgData = bufferCtx.createImageData(doodleEdge, doodleEdge);
-        // const bufferCnvBuffer = new Uint32Array(bufferCnvImgData.data.buffer);
+        // TODO: Add delete button and feature
 
-        for (const [i, letter] of post.drawing.split("").entries()) {
-            const col = ~~(i % doodleEdge);
-            const row = ~~(i / doodleEdge);
-
-            if (letter === '1') {
-                ctx.fillRect(
-                    col * pxSize,
-                    row * pxSize,
-                    pxSize,
-                    pxSize
-                );
-            }
-        }
+        drawToContext(ctx, post.drawing);
         postContainer.appendChild(canvas);
         postContainer.appendChild(caption);
         containerElement.appendChild(postContainer);
+    }
+}
+
+
+/**
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {string} drawing
+ */
+function drawToContext(ctx, drawing) {
+    // TODO: Implement buffer code to avoid redraws
+    // const bufferCanvas = document.createElement("canvas");
+    // bufferCanvas.width = doodleEdge;
+    // bufferCanvas.height = doodleEdge;
+    // const bufferCtx = bufferCanvas.getContext("2d");
+    // const bufferCnvImgData = bufferCtx.createImageData(doodleEdge, doodleEdge);
+    // const bufferCnvBuffer = new Uint32Array(bufferCnvImgData.data.buffer);
+
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvEdgeLen, canvEdgeLen);
+    ctx.fillStyle = "#000";
+    for (const [i, letter] of drawing.split("").entries()) {
+        const col = ~~(i % doodleEdge);
+        const row = ~~(i / doodleEdge);
+
+        if (letter === '1') {
+            ctx.fillRect(
+                col * pxSize,
+                row * pxSize,
+                pxSize,
+                pxSize
+            );
+        }
     }
 }
