@@ -110,20 +110,59 @@ function renderPosts() {
         postContainer.classList.add("postContainer", "row");
         postContainer.style.textAlign = "center";
 
-        const caption = document.createElement("h5");
+        const caption = document.createElement("div");
+        caption.classList.add("postCaption");
         caption.innerText = post["yy-mm-dd"] + "/" + post.createddate;
+
+        const deleteButton = document.createElement("button");
+        deleteButton.innerText = "Delete";
+        deleteButton.setAttribute("data-partition", post["yy-mm-dd"]);
+        deleteButton.setAttribute("data-sort", post.createddate);
+        deleteButton.addEventListener("click", handleDeleteButton);
 
         const canvas = document.createElement("canvas");
         canvas.width = canvEdgeLen;
         canvas.height = canvEdgeLen;
         const ctx = canvas.getContext("2d");
 
-        // TODO: Add delete button and feature
-
         drawToContext(ctx, post.drawing);
         postContainer.appendChild(canvas);
         postContainer.appendChild(caption);
+        postContainer.appendChild(deleteButton);
         containerElement.appendChild(postContainer);
+    }
+}
+
+/** @param {Event} event */
+async function handleDeleteButton(event) {
+    /** @type {HTMLButtonElement} */
+    const button = event.target;
+    const partition = button.dataset.partition;
+    const sort = button.dataset.sort;
+
+    if (!partition || !sort) {
+        throw new Error("Delete button data elements not set correctly");
+    }
+    const url = [baseUrl, partition, sort].join("/");
+    const response = await fetch(url, { method: "DELETE" }
+    ).catch(err => {
+        console.error(err);
+    });
+
+    const responseBody = await response.json();
+    if (response.ok) {
+        const indexOfDeleted = posts.findIndex(x =>
+            x["yy-mm-dd"] === partition &&
+            x.createddate === sort
+        );
+        if (indexOfDeleted === -1) {
+            console.error("Posts array deleted drawing could not be found");
+        } else {
+            posts.splice(indexOfDeleted, 1);
+            renderPosts();
+        }
+    } else {
+        console.error(responseBody);
     }
 }
 
