@@ -10,7 +10,10 @@ const baseUrl = "https://758js4xuaf.execute-api.us-east-2.amazonaws.com/doodles"
 const doodleEdge = 16;
 
 window.addEventListener("load", async (_) => {
+    initializeDrawingCanvas();
+
     const posts = await loadPosts();
+
     const contents = document.getElementById("contents");
     if (!contents) throw new Error("content div not found");
 
@@ -18,6 +21,28 @@ window.addEventListener("load", async (_) => {
     else contents.innerText = "No content yet :(";
 });
 
+function initializeDrawingCanvas() {
+    const drawingCanvas = document.getElementById("drawingCanvas");
+    // Access using drawingCanvas.dataset.drawing
+    drawingCanvas.setAttribute("data-drawing", "0".repeat(doodleEdge * doodleEdge));
+
+    const postButton = document.getElementById("postButton");
+    postButton.addEventListener("click", handlePostButton);
+}
+
+async function handlePostButton() {
+    const response = await fetch(baseUrl, {
+        method: "PUT",
+        body: JSON.stringify({ drawing: drawingCanvas.dataset.drawing + "avbc" }),
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    }).then(res => res.json()
+    ).catch(err => {
+        console.error(err);
+    });
+    console.log(response);
+}
 
 /** @returns {Promise<DoodleItem[]>} */
 async function loadPosts() {
@@ -35,7 +60,7 @@ async function loadPosts() {
  * @param {HTMLElement} containerElement 
 */
 function renderPosts(posts, containerElement) {
-    const canvEdgeLen = 400;
+    const canvEdgeLen = 640;
     const pxSize = ~~(canvEdgeLen / doodleEdge);
 
     for (const post of posts) {
