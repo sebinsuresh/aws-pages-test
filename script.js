@@ -6,7 +6,7 @@
  * @property {string} drawing
  */
 
-const baseUrl = "https://758js4xuaf.execute-api.us-east-2.amazonaws.com/doodles/";
+const baseUrl = "https://758js4xuaf.execute-api.us-east-2.amazonaws.com/doodles";
 const doodleEdge = 16;
 
 window.addEventListener("load", async (_) => {
@@ -19,7 +19,7 @@ window.addEventListener("load", async (_) => {
 /** @returns {DoodleItem[]} */
 async function loadPosts() {
     const yyMmDd = new Date().toISOString().slice(2, 10); // "23-02-22"
-    const reqUrl = baseUrl + yyMmDd;
+    const reqUrl = baseUrl + "/" + yyMmDd;
     return await fetch(reqUrl)
         .then(res => res.json())
         .catch(err => {
