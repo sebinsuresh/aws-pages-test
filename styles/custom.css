@@ -1,29 +1,29 @@
 body {
-    background-color: #fafafa;
-    color: #333;
+  background-color: #fafafa;
+  color: #333;
 }
 
 .postContainer {
-    padding: 1rem 0;
-    margin: 1rem 0;
+  padding: 1rem 0;
+  margin: 1rem 0;
 }
 
 .postContainer > canvas {
-    border: 1px solid black;
+  border: 1px solid black;
 }
 
 #drawingModal {
-    text-align: center;
+  text-align: center;
 }
 
 #drawingCanvas {
-    border: 1px solid black;
-    display: block;
-    margin: 1rem auto;
+  border: 1px solid black;
+  display: block;
+  margin: 1rem auto;
 }
 
 button:disabled {
-    color: #555;
-    background-color: silver;
-    border: 1px solid #bbb;
+  color: #555;
+  background-color: silver;
+  border: 1px solid #bbb;
 }
