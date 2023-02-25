@@ -23,6 +23,36 @@ window.addEventListener("load", async (_) => {
     else contents.innerText = "No content yet :(";
 });
 
+/** Regex to split binary string every 2 bytes / 16 bits */
+const splitSingleRegex = new RegExp(`(?<=^(?:.{16})+)(?!$)`);
+
+/**
+ * @param {string} binaryStr
+ * @returns {string}
+ */
+function compressToString(binaryStr) {
+    return binaryStr
+        .split(splitSingleRegex)
+        .map(x => String.fromCharCode(Number(
+            '0b' + x
+        )))
+        .join("");
+}
+
+/**
+ * @param {string} compressStr
+ * @returns {string}
+ */
+function decompressToBinary(compressStr) {
+    return compressStr
+        .split("")
+        .map(x => x
+            .charCodeAt(0)
+            .toString(2)
+            .padStart(doodleEdge, "0"))
+        .join("");
+}
+
 function initializeDrawingCanvas() {
     const initialDrawing = generateRandomDrawing();
     drawToDrawingCanvas(initialDrawing);
