@@ -180,6 +180,9 @@ function drawToContext(ctx, drawing) {
     // const bufferCnvImgData = bufferCtx.createImageData(doodleEdge, doodleEdge);
     // const bufferCnvBuffer = new Uint32Array(bufferCnvImgData.data.buffer);
 
+    // Disable anti-aliasing in canvas
+    ctx.imageSmoothingEnabled = false;
+
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, canvEdgeLen, canvEdgeLen);
     ctx.fillStyle = "#000";
