@@ -100,8 +100,9 @@ function generateRandomDrawingBinary() {
  */
 function drawToDrawingCanvas(drawing) {
     const drawingCanvas = document.getElementById("drawingCanvas");
-    // Access using drawingCanvas.dataset.drawing
-    drawingCanvas.setAttribute("data-drawing", drawing);
+
+    // Access attribute value using `drawingCanvas.dataset.drawing`
+    drawingCanvas.setAttribute("data-drawing", decompressToBinary(drawing));
     drawToContext(drawingCanvas.getContext("2d"), drawing);
 }
 
@@ -110,7 +111,7 @@ function handleResetButton() {
 }
 
 async function handlePostButton() {
-    const drawing = drawingCanvas.dataset.drawing;
+    const drawing = compressToString(drawingCanvas.dataset.drawing);
     const response = await fetch(baseUrl, {
         method: "PUT",
         body: JSON.stringify({ drawing: drawing }),
@@ -233,7 +234,8 @@ function drawToContext(ctx, drawing) {
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, canvEdgeLen, canvEdgeLen);
     ctx.fillStyle = "#000";
-    for (const [i, letter] of drawing.split("").entries()) {
+    const drawingBinary = decompressToBinary(drawing);
+    for (const [i, letter] of drawingBinary.split("").entries()) {
         const col = ~~(i % doodleEdge);
         const row = ~~(i / doodleEdge);
 
