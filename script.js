@@ -1,3 +1,4 @@
+//#region JSDoc Type Declarations
 /**
  * The response object from Dynamo.
  * @typedef {Object} DoodleItem
@@ -5,7 +6,9 @@
  * @property {string} yy-mm-dd
  * @property {string} drawing
  */
+//#endregion
 
+//#region Global variables
 const baseUrl = "https://758js4xuaf.execute-api.us-east-2.amazonaws.com/doodles";
 const canvEdgeLen = 320;
 const doodleEdge = 16;
@@ -13,14 +16,124 @@ const pxSize = ~~(canvEdgeLen / doodleEdge);
 
 /** @type {DoodleItem[]} */
 let posts = [];
+//#endregion
 
 window.addEventListener("load", async (_) => {
     initializeDrawingCanvas();
-
-    posts = await loadPosts();
-
+    posts = await getPosts();
     renderPosts();
 });
+
+//#region Event Handlers
+
+function handleCreateButton() {
+    showDrawingModal();
+}
+
+function handleCancelButton() {
+    hideDrawingModal();
+}
+
+function handleResetButton() {
+    drawToDrawingCanvas(compressToString(generateRandomDrawingBinary()));
+}
+
+async function handlePostButton() {
+    const drawing = compressToString(drawingCanvas.dataset.drawing);
+    const response = await fetch(baseUrl, {
+        method: "PUT",
+        body: JSON.stringify({ drawing: drawing }),
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    }).catch(err => {
+        console.error(err);
+    });
+
+    /** @type {DoodleItem | string} */
+    const responseBody = await response.json();
+    if (response.ok) {
+        posts.push(responseBody);
+        renderPosts();
+        handleResetButton();
+        hideDrawingModal();
+    } else {
+        console.error(responseBody);
+    }
+}
+
+/** @param {Event} event */
+async function handleDeleteButton(event) {
+    /** @type {HTMLButtonElement} */
+    const button = event.target;
+    const partition = button.dataset.partition;
+    const sort = button.dataset.sort;
+
+    if (!partition || !sort) {
+        throw new Error("Delete button data elements not set correctly");
+    }
+    const url = [baseUrl, partition, sort].join("/");
+    const response = await fetch(url, { method: "DELETE" }
+    ).catch(err => {
+        console.error(err);
+    });
+
+    const responseBody = await response.json();
+    if (response.ok) {
+        const indexOfDeleted = posts.findIndex(x =>
+            x["yy-mm-dd"] === partition &&
+            x.createddate === sort
+        );
+        if (indexOfDeleted === -1) {
+            console.error("Posts array deleted drawing could not be found");
+        } else {
+            posts.splice(indexOfDeleted, 1);
+            renderPosts();
+        }
+    } else {
+        console.error(responseBody);
+    }
+}
+
+//#endregion
+
+//#region API Functions
+
+/** 
+ * Returns all posts from today (UTC). Returns empty array if non success.
+ * @returns {Promise<DoodleItem[]>} 
+ * */
+async function getPosts() {
+    const yyMmDd = new Date().toISOString().slice(2, 10); // "23-02-22"
+    const reqUrl = baseUrl + "/" + yyMmDd;
+    const response = await fetch(reqUrl)
+        .then(res => res.json())
+        .catch(err => {
+            console.error("Couldn't fetch records or parse body", err);
+        });
+
+    const responseBody = await response.json();
+    if (response.ok) {
+        return responseBody;
+    } else {
+        console.error(responseBody);
+    }
+    return [];
+}
+
+//#endregion
+
+//#region Utility functions
+
+/** @returns {string} */
+function generateRandomDrawingBinary() {
+    let drawing = "";
+    for (let i = 0; i < doodleEdge * doodleEdge; i++) {
+        // drawing += "0";
+        drawing += Math.random() > 0.5 ? "1" : "0";
+    }
+    return drawing;
+}
 
 /**
  * @param {string} binaryStr
@@ -65,6 +178,44 @@ function testFunctions() {
     }
 }
 
+/**
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {string} drawing
+ */
+function drawToContext(ctx, drawing) {
+    // TODO: Implement buffer code to avoid redraws
+    // const bufferCanvas = document.createElement("canvas");
+    // bufferCanvas.width = doodleEdge;
+    // bufferCanvas.height = doodleEdge;
+    // const bufferCtx = bufferCanvas.getContext("2d");
+    // const bufferCnvImgData = bufferCtx.createImageData(doodleEdge, doodleEdge);
+    // const bufferCnvBuffer = new Uint32Array(bufferCnvImgData.data.buffer);
+
+    // Disable anti-aliasing in canvas
+    ctx.imageSmoothingEnabled = false;
+
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvEdgeLen, canvEdgeLen);
+    ctx.fillStyle = "#000";
+    const drawingBinary = decompressToBinary(drawing);
+    for (const [i, letter] of drawingBinary.split("").entries()) {
+        const col = ~~(i % doodleEdge);
+        const row = ~~(i / doodleEdge);
+
+        if (letter === '1') {
+            ctx.fillRect(
+                col * pxSize,
+                row * pxSize,
+                pxSize,
+                pxSize
+            );
+        }
+    }
+}
+
+//#endregion
+
+//#region UI Functions
 function initializeDrawingCanvas() {
     testFunctions();
 
@@ -84,14 +235,6 @@ function initializeDrawingCanvas() {
     resetButton.addEventListener("click", handleResetButton);
 }
 
-function handleCancelButton() {
-    hideDrawingModal();
-}
-
-function handleCreateButton() {
-    showDrawingModal();
-}
-
 function showDrawingModal() {
     document.getElementById("drawingModalBackdrop").hidden = false;
     document.getElementById("drawingModal").hidden = false;
@@ -100,16 +243,6 @@ function showDrawingModal() {
 function hideDrawingModal() {
     document.getElementById("drawingModalBackdrop").hidden = true;
     document.getElementById("drawingModal").hidden = true;
-}
-
-/** @returns {string} */
-function generateRandomDrawingBinary() {
-    let drawing = "";
-    for (let i = 0; i < doodleEdge * doodleEdge; i++) {
-        // drawing += "0";
-        drawing += Math.random() > 0.5 ? "1" : "0";
-    }
-    return drawing;
 }
 
 /**
@@ -121,45 +254,6 @@ function drawToDrawingCanvas(drawing) {
     // Access attribute value using `drawingCanvas.dataset.drawing`
     drawingCanvas.setAttribute("data-drawing", decompressToBinary(drawing));
     drawToContext(drawingCanvas.getContext("2d"), drawing);
-}
-
-function handleResetButton() {
-    drawToDrawingCanvas(compressToString(generateRandomDrawingBinary()));
-}
-
-async function handlePostButton() {
-    const drawing = compressToString(drawingCanvas.dataset.drawing);
-    const response = await fetch(baseUrl, {
-        method: "PUT",
-        body: JSON.stringify({ drawing: drawing }),
-        headers: {
-            'Content-Type': 'application/json'
-        },
-    }).catch(err => {
-        console.error(err);
-    });
-
-    /** @type {DoodleItem | string} */
-    const responseBody = await response.json();
-    if (response.ok) {
-        posts.push(responseBody);
-        renderPosts();
-        handleResetButton();
-        hideDrawingModal();
-    } else {
-        console.error(responseBody);
-    }
-}
-
-/** @returns {Promise<DoodleItem[]>} */
-async function loadPosts() {
-    const yyMmDd = new Date().toISOString().slice(2, 10); // "23-02-22"
-    const reqUrl = baseUrl + "/" + yyMmDd;
-    return await fetch(reqUrl)
-        .then(res => res.json())
-        .catch(err => {
-            console.error("Couldn't fetch records or parse body", err);
-        });
 }
 
 function renderPosts() {
@@ -203,71 +297,4 @@ function renderPosts() {
     }
 }
 
-/** @param {Event} event */
-async function handleDeleteButton(event) {
-    /** @type {HTMLButtonElement} */
-    const button = event.target;
-    const partition = button.dataset.partition;
-    const sort = button.dataset.sort;
-
-    if (!partition || !sort) {
-        throw new Error("Delete button data elements not set correctly");
-    }
-    const url = [baseUrl, partition, sort].join("/");
-    const response = await fetch(url, { method: "DELETE" }
-    ).catch(err => {
-        console.error(err);
-    });
-
-    const responseBody = await response.json();
-    if (response.ok) {
-        const indexOfDeleted = posts.findIndex(x =>
-            x["yy-mm-dd"] === partition &&
-            x.createddate === sort
-        );
-        if (indexOfDeleted === -1) {
-            console.error("Posts array deleted drawing could not be found");
-        } else {
-            posts.splice(indexOfDeleted, 1);
-            renderPosts();
-        }
-    } else {
-        console.error(responseBody);
-    }
-}
-
-
-/**
- * @param {CanvasRenderingContext2D} ctx
- * @param {string} drawing
- */
-function drawToContext(ctx, drawing) {
-    // TODO: Implement buffer code to avoid redraws
-    // const bufferCanvas = document.createElement("canvas");
-    // bufferCanvas.width = doodleEdge;
-    // bufferCanvas.height = doodleEdge;
-    // const bufferCtx = bufferCanvas.getContext("2d");
-    // const bufferCnvImgData = bufferCtx.createImageData(doodleEdge, doodleEdge);
-    // const bufferCnvBuffer = new Uint32Array(bufferCnvImgData.data.buffer);
-
-    // Disable anti-aliasing in canvas
-    ctx.imageSmoothingEnabled = false;
-
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(0, 0, canvEdgeLen, canvEdgeLen);
-    ctx.fillStyle = "#000";
-    const drawingBinary = decompressToBinary(drawing);
-    for (const [i, letter] of drawingBinary.split("").entries()) {
-        const col = ~~(i % doodleEdge);
-        const row = ~~(i / doodleEdge);
-
-        if (letter === '1') {
-            ctx.fillRect(
-                col * pxSize,
-                row * pxSize,
-                pxSize,
-                pxSize
-            );
-        }
-    }
-}
+//#endregion
