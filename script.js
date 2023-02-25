@@ -53,7 +53,24 @@ function decompressToBinary(compressStr) {
         .join("");
 }
 
+/** Sanity checks */
+function testFunctions() {
+    const testBinary = generateRandomDrawing();
+
+    if (testBinary.length !== doodleEdge * doodleEdge) {
+        throw new Error(`Generated drawings must be ${doodleEdge} x ${doodleEdge} long`);
+    }
+    if (compressToString(testBinary).length !== (doodleEdge * doodleEdge) / 16) {
+        throw new Error("Each character in compressed string must be two bytes long");
+    }
+    if (testBinary !== decompressToBinary(compressToString(testBinary))) {
+        throw new Error("Compress-decompress tests do not pass");
+    }
+}
+
 function initializeDrawingCanvas() {
+    testFunctions();
+
     const initialDrawing = generateRandomDrawing();
     drawToDrawingCanvas(initialDrawing);
 
