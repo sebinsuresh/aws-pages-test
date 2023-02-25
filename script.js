@@ -23,16 +23,14 @@ window.addEventListener("load", async (_) => {
     else contents.innerText = "No content yet :(";
 });
 
-/** Regex to split binary string every 2 bytes / 16 bits */
-const splitSingleRegex = new RegExp(`(?<=^(?:.{16})+)(?!$)`);
-
 /**
  * @param {string} binaryStr
  * @returns {string}
  */
 function compressToString(binaryStr) {
     return binaryStr
-        .split(splitSingleRegex)
+        .split(/([01]{16})/)    // Split binary string every 2 bytes / 16 bits
+        .filter(x => x !== '')  // Remove empty strings between each byte
         .map(x => String.fromCharCode(Number(
             '0b' + x
         )))
