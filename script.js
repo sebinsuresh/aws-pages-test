@@ -55,7 +55,7 @@ function decompressToBinary(compressStr) {
 
 /** Sanity checks */
 function testFunctions() {
-    const testBinary = generateRandomDrawing();
+    const testBinary = generateRandomDrawingBinary();
 
     if (testBinary.length !== doodleEdge * doodleEdge) {
         throw new Error(`Generated drawings must be ${doodleEdge} x ${doodleEdge} long`);
@@ -71,7 +71,7 @@ function testFunctions() {
 function initializeDrawingCanvas() {
     testFunctions();
 
-    const initialDrawing = generateRandomDrawing();
+    const initialDrawing = compressToString(generateRandomDrawingBinary());
     drawToDrawingCanvas(initialDrawing);
 
     const postButton = document.getElementById("postButton");
@@ -86,7 +86,7 @@ function initializeDrawingCanvas() {
 }
 
 /** @returns {string} */
-function generateRandomDrawing() {
+function generateRandomDrawingBinary() {
     let drawing = "";
     for (let i = 0; i < doodleEdge * doodleEdge; i++) {
         // drawing += "0";
@@ -106,7 +106,7 @@ function drawToDrawingCanvas(drawing) {
 }
 
 function handleResetButton() {
-    drawToDrawingCanvas(generateRandomDrawing());
+    drawToDrawingCanvas(compressToString(generateRandomDrawingBinary()));
 }
 
 async function handlePostButton() {
