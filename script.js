@@ -19,8 +19,7 @@ window.addEventListener("load", async (_) => {
 
     posts = await loadPosts();
 
-    if (posts?.length) renderPosts();
-    else contents.innerText = "No content yet :(";
+    renderPosts();
 });
 
 /**
@@ -75,12 +74,32 @@ function initializeDrawingCanvas() {
     const postButton = document.getElementById("postButton");
     postButton.addEventListener("click", handlePostButton);
 
-    // TODO: Implement modal and close function on cancel button
-    // const cancelButton = document.getElementById("cancelDrawButton");
-    // cancelButton.addEventListener("click", handleCancelButton);
+    const cancelButton = document.getElementById("cancelDrawButton");
+    cancelButton.addEventListener("click", handleCancelButton);
+
+    const createButton = document.getElementById("createButton");
+    createButton.addEventListener("click", handleCreateButton);
 
     const resetButton = document.getElementById("resetDrawButton");
     resetButton.addEventListener("click", handleResetButton);
+}
+
+function handleCancelButton() {
+    hideDrawingModal();
+}
+
+function handleCreateButton() {
+    showDrawingModal();
+}
+
+function showDrawingModal() {
+    document.getElementById("drawingModalBackdrop").hidden = false;
+    document.getElementById("drawingModal").hidden = false;
+}
+
+function hideDrawingModal() {
+    document.getElementById("drawingModalBackdrop").hidden = true;
+    document.getElementById("drawingModal").hidden = true;
 }
 
 /** @returns {string} */
@@ -126,6 +145,7 @@ async function handlePostButton() {
         posts.push(responseBody);
         renderPosts();
         handleResetButton();
+        hideDrawingModal();
     } else {
         console.error(responseBody);
     }
@@ -145,6 +165,10 @@ async function loadPosts() {
 function renderPosts() {
     const containerElement = document.getElementById("contents");
     if (!containerElement) throw new Error("content div not found");
+    if (!posts?.length) {
+        contents.innerText = "No content yet :(";
+        return;
+    }
 
     // TODO: Make the posts show up without removing all elements
     containerElement.innerHTML = '';

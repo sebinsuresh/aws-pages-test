@@ -33,14 +33,16 @@
       <div class="row" style="text-align: center">
         <h1>Da Posts</h1>
       </div>
-      <div id="drawingModal">
+      <div id="drawingModalBackdrop" hidden></div>
+      <div id="drawingModal" hidden>
         <canvas width="320" height="320" id="drawingCanvas"></canvas>
-        <button id="cancelDrawButton" disabled>Cancel</button>
+        <button id="cancelDrawButton">Cancel</button>
         <button id="resetDrawButton">Reset</button>
         <button id="postButton">Post</button>
       </div>
       <div class="content" id="contents"></div>
     </div>
+    <button id="createButton">Create</button>
     <script src="script.js"></script>
   </body>
 </html>

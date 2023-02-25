@@ -12,8 +12,31 @@ body {
   border: 1px solid black;
 }
 
-#drawingModal {
+#contents {
   text-align: center;
+}
+
+#drawingModalBackdrop {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  /* backdrop-filter: blur(2px); */
+}
+
+#drawingModal {
+  --canvas-padding: 20px;
+  position: fixed;
+  background: #fafafa;
+  padding: var(--canvas-padding);
+  border-radius: 20px;
+  box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.5);
+  width: 80%;
+  top: 10%;
+  text-align: center;
+  left: calc(10% - var(--canvas-padding));
 }
 
 #drawingCanvas {
@@ -31,4 +54,13 @@ button:disabled {
 button {
   /* Prevent iOS zooming in on double taps */
   touch-action: manipulation;
+  background-color: #fafafa;
+}
+
+#createButton {
+  position: fixed;
+  bottom: 0px;
+  right: 0px;
+  margin-right: 20px;
+  margin-bottom: 20px;
 }
