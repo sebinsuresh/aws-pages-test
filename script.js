@@ -34,6 +34,10 @@ function handleCancelButton() {
     hideDrawingModal();
 }
 
+function handleDrawingModalBackdropClick() {
+    hideDrawingModal();
+}
+
 function handleResetButton() {
     drawToDrawingCanvas(compressToString(generateRandomDrawingBinary()));
 }
@@ -226,6 +230,9 @@ function initializeDrawingCanvas() {
 
     const cancelButton = document.getElementById("cancelDrawButton");
     cancelButton.addEventListener("click", handleCancelButton);
+
+    const drawingModalBackdrop = document.getElementById("drawingModalBackdrop");
+    drawingModalBackdrop.addEventListener("click", handleDrawingModalBackdropClick);
 
     const createButton = document.getElementById("createButton");
     createButton.addEventListener("click", handleCreateButton);
