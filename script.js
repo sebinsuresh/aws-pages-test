@@ -107,7 +107,6 @@ async function getPosts() {
     const yyMmDd = new Date().toISOString().slice(2, 10); // "23-02-22"
     const reqUrl = baseUrl + "/" + yyMmDd;
     const response = await fetch(reqUrl)
-        .then(res => res.json())
         .catch(err => {
             console.error("Couldn't fetch records or parse body", err);
         });
