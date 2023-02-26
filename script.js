@@ -162,7 +162,7 @@ function decompressToBinary(compressStr) {
         .map(x => x
             .charCodeAt(0)
             .toString(2)
-            .padStart(doodleEdge, "0"))
+            .padStart(16, "0"))
         .join("");
 }
 
