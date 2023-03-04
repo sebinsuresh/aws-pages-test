@@ -15,7 +15,7 @@ const drawingCanvasId = 'drawingCanvas';
 const baseUrl =
   'https://758js4xuaf.execute-api.us-east-2.amazonaws.com/doodles';
 const canvEdgeLen = 320;
-const doodleEdge = 16;
+const doodleEdge = 32;
 const pxSize = ~~(canvEdgeLen / doodleEdge);
 
 /** @type {DoodleItem[]} */
@@ -303,12 +303,30 @@ function drawToContext(ctx, drawing) {
   ctx.fillStyle = '#fff';
   ctx.fillRect(0, 0, canvEdgeLen, canvEdgeLen);
   ctx.fillStyle = '#000';
-  for (const [i, letter] of drawing.split('').entries()) {
-    const col = ~~(i % doodleEdge);
-    const row = ~~(i / doodleEdge);
 
-    if (letter === '1') {
-      ctx.fillRect(col * pxSize, row * pxSize, pxSize, pxSize);
+  // Old 16x16 mode
+  if (drawing.length === 16 * 16) {
+    for (const [i, letter] of drawing.split('').entries()) {
+      const col = ~~(i % 16);
+      const row = ~~(i / 16);
+
+      if (letter === '1') {
+        ctx.fillRect(
+          col * pxSize * 2,
+          row * pxSize * 2,
+          pxSize * 2,
+          pxSize * 2
+        );
+      }
+    }
+  } else {
+    for (const [i, letter] of drawing.split('').entries()) {
+      const col = ~~(i % doodleEdge);
+      const row = ~~(i / doodleEdge);
+
+      if (letter === '1') {
+        ctx.fillRect(col * pxSize, row * pxSize, pxSize, pxSize);
+      }
     }
   }
 }
