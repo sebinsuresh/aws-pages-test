@@ -20,7 +20,7 @@ let posts = [];
 
 window.addEventListener("load", async (_) => {
     initializeDrawingCanvas();
-    posts = await getPosts();
+    posts = await getPostsAPI();
     renderPosts();
 });
 
@@ -44,49 +44,26 @@ function handleResetButton() {
 
 async function handlePostButton() {
     const drawing = compressToString(drawingCanvas.dataset.drawing);
-    const response = await fetch(baseUrl, {
-        method: "PUT",
-        body: JSON.stringify({ drawing: drawing }),
-        headers: {
-            'Content-Type': 'application/json'
-        },
-    }).catch(err => {
-        console.error(err);
-    });
-
-    /** @type {DoodleItem | string} */
-    const responseBody = await response.json();
-    if (response.ok) {
-        posts.push(responseBody);
+    const responseObj = await postDrawingAPI(drawing);
+    if (responseObj !== null) {
+        posts.push(responseObj);
         renderPosts();
         handleResetButton();
         hideDrawingModal();
-    } else {
-        console.error(responseBody);
     }
 }
 
 /** @param {Event} event */
 async function handleDeleteButton(event) {
-    /** @type {HTMLButtonElement} */
-    const button = event.target;
-    const partition = button.dataset.partition;
-    const sort = button.dataset.sort;
+    const doodle = getDoodleItemFromDeleteButton(event.target);
+    if (doodle === null) return;
 
-    if (!partition || !sort) {
-        throw new Error("Delete button data elements not set correctly");
-    }
-    const url = [baseUrl, partition, sort].join("/");
-    const response = await fetch(url, { method: "DELETE" }
-    ).catch(err => {
-        console.error(err);
-    });
+    const deleted = await deleteDrawingAPI(doodle);
 
-    const responseBody = await response.json();
-    if (response.ok) {
+    if (deleted) {
         const indexOfDeleted = posts.findIndex(x =>
-            x["yy-mm-dd"] === partition &&
-            x.createddate === sort
+            x["yy-mm-dd"] === doodle["yy-mm-dd"] &&
+            x.createddate === doodle.createddate
         );
         if (indexOfDeleted === -1) {
             console.error("Posts array deleted drawing could not be found");
@@ -94,8 +71,6 @@ async function handleDeleteButton(event) {
             posts.splice(indexOfDeleted, 1);
             renderPosts();
         }
-    } else {
-        console.error(responseBody);
     }
 }
 
@@ -107,7 +82,7 @@ async function handleDeleteButton(event) {
  * Returns all posts from today (UTC). Returns empty array if non success.
  * @returns {Promise<DoodleItem[]>} 
  * */
-async function getPosts() {
+async function getPostsAPI() {
     const yyMmDd = new Date().toISOString().slice(2, 10); // "23-02-22"
     const reqUrl = baseUrl + "/" + yyMmDd;
     const response = await fetch(reqUrl)
@@ -122,6 +97,48 @@ async function getPosts() {
         console.error(responseBody);
     }
     return [];
+}
+
+/** 
+ * Posts the given drawing and returns the response from API or null on non-success.
+ * @param drawing {string} Compressed drawing string
+ * @returns {Promise<DoodleItem | null>} 
+ * */
+async function postDrawingAPI(drawing) {
+    const response = await fetch(baseUrl, {
+        method: "PUT",
+        body: JSON.stringify({ drawing: drawing }),
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    }).catch(err => {
+        console.error(err);
+    });
+
+    /** @type {DoodleItem | string} */
+    const responseBody = await response.json();
+    if (!response.ok) {
+        console.error(responseBody);
+        return null;
+    }
+    return responseBody;
+}
+
+/**
+ * Attempt to delete the given DoodleItem. Returns success.
+ * @param {DoodleItem} doodleItem DoodleItem to delete
+ * @returns {Promise<Boolean>}
+ */
+async function deleteDrawingAPI(doodleItem) {
+    const url = [baseUrl, doodleItem["yy-mm-dd"], doodleItem.createddate].join("/");
+    const response = await fetch(url, { method: "DELETE" }
+    ).catch(err => {
+        console.error(err);
+    });
+    const responseBody = await response.json();
+    const success = !!(response.ok);
+    if (!success) console.error(responseBody);
+    return success;
 }
 
 //#endregion
@@ -214,6 +231,23 @@ function drawToContext(ctx, drawing) {
             );
         }
     }
+}
+
+/**
+ * Reads data attributes from a delete button and returns a DoodleItem object containing sort and partition keys.
+ * @param {HTMLButtonElement} deleteButton
+ * @returns {DoodleItem | null}
+ */
+function getDoodleItemFromDeleteButton(deleteButton) {
+    const partition = deleteButton.dataset.partition;
+    const sort = deleteButton.dataset.sort;
+
+    if (!partition || !sort) {
+        console.error("Delete button data elements not set correctly");
+        return null;
+    }
+
+    return itemToDelete = { "yy-mm-dd": partition, createddate: sort };
 }
 
 //#endregion
