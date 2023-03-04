@@ -39,6 +39,10 @@ body {
   left: calc(10% - var(--canvas-padding));
 }
 
+#drawingModal label {
+  display: inline;
+}
+
 #drawingCanvas {
   border: 1px solid black;
   display: block;

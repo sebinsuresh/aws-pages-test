@@ -17,6 +17,7 @@ const pxSize = ~~(canvEdgeLen / doodleEdge);
 
 /** @type {DoodleItem[]} */
 let posts = [];
+let eraseMode = false;
 //#endregion
 
 //#region Event Handlers
@@ -34,7 +35,10 @@ function handleDrawingModalBackdropClick() {
 }
 
 function handleResetButton() {
-  drawToDrawingCanvas(compressToString(generateRandomDrawingBinary()));
+
+/**@param {Event} event */
+function handleEraseCheckBox(event) {
+  eraseMode = event.target.checked;
 }
 
 async function handlePostButton() {
@@ -248,6 +252,9 @@ function initializeDrawingCanvas() {
 
   const initialDrawing = compressToString(generateRandomDrawingBinary());
   drawToDrawingCanvas(initialDrawing);
+
+  const eraseCheckBox = document.getElementById('eraseChk');
+  eraseCheckBox.addEventListener('change', handleEraseCheckBox);
 
   const postButton = document.getElementById('postButton');
   postButton.addEventListener('click', handlePostButton);

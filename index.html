@@ -34,11 +34,17 @@
         <h1>Posts</h1>
       </div>
       <div id="drawingModalBackdrop" hidden></div>
-      <div id="drawingModal" hidden>
+      <div id="drawingModal" style="touch-action: none" hidden>
         <canvas width="320" height="320" id="drawingCanvas"></canvas>
-        <button id="cancelDrawButton">Cancel</button>
-        <button id="resetDrawButton">Reset</button>
-        <button id="postButton">Post</button>
+        <div style="display: inline-block">
+          <input type="checkbox" id="eraseChk" />
+          <label for="eraseChk">Erase Mode</label>
+        </div>
+        <div style="display: inline-block">
+          <button id="cancelDrawButton">Cancel</button>
+          <button id="resetDrawButton">Reset</button>
+          <button id="postButton">Post</button>
+        </div>
       </div>
       <div class="content" id="contents"></div>
     </div>
