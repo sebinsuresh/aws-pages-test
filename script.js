@@ -18,12 +18,6 @@ const pxSize = ~~(canvEdgeLen / doodleEdge);
 let posts = [];
 //#endregion
 
-window.addEventListener("load", async (_) => {
-    initializeDrawingCanvas();
-    posts = await getPostsAPI();
-    renderPosts();
-});
-
 //#region Event Handlers
 
 function handleCreateButton() {
@@ -338,3 +332,9 @@ function renderPosts() {
 }
 
 //#endregion
+
+window.addEventListener("load", async (_) => {
+    initializeDrawingCanvas();
+    posts = await getPostsAPI();
+    renderPosts();
+});
