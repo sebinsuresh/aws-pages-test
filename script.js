@@ -79,6 +79,52 @@ async function handleDeleteButton(event) {
   }
 }
 
+/** @param {MouseEvent} evt */
+function handleCanvasMouseUp(evt) {
+  const leftMousePressed = evt.button === 0;
+  const color = leftMousePressed && !eraseMode ? 1 : 0;
+  const pixels = getCanvasPixels(evt.clientX, evt.clientY);
+  evt.target.setAttribute(
+    'data-drawing',
+    drawPixelAt(pixels.x, pixels.y, color, evt.target.dataset.drawing)
+  );
+}
+
+/** @param {MouseEvent} evt */
+function handleCanvasMouseMove(evt) {
+  const noButtonPresed = evt.buttons === 0;
+  const leftMousePressed = evt.buttons === 1;
+
+  if (noButtonPresed) return;
+  const pixels = getCanvasPixels(evt.clientX, evt.clientY);
+  const color = leftMousePressed && !eraseMode ? 1 : 0;
+  const newDrawing = drawPixelAt(
+    pixels.x,
+    pixels.y,
+    color,
+    evt.target.dataset.drawing
+  );
+  evt.target.setAttribute('data-drawing', newDrawing);
+}
+
+/** @param {TouchEvent} evt */
+function handleCanvasTouchMove(evt) {
+  evt.preventDefault(); // prevent scroll
+
+  const pixels = getCanvasPixels(
+    evt.touches[0].clientX,
+    evt.touches[0].clientY
+  );
+  const color = eraseMode ? 0 : 1;
+  const newDrawing = drawPixelAt(
+    pixels.x,
+    pixels.y,
+    color,
+    evt.target.dataset.drawing
+  );
+  evt.target.setAttribute('data-drawing', newDrawing);
+}
+
 //#endregion
 
 //#region API Functions
@@ -211,6 +257,34 @@ function testFunctions() {
 }
 
 /**
+ * @param {Number} x Must be smaller than doodleEdge value
+ * @param {Number} y Must be smaller than doodleEdge value
+ * @param {Number} color Must be `0` or `1`
+ * @param {string} drawing
+ */
+function drawPixelAt(x, y, color, drawing) {
+  // No checking done for performance
+  const index = y * doodleEdge + x;
+  return drawing.substring(0, index) + color + drawing.substring(index + 1);
+}
+
+function animationFunction() {
+  drawToDrawingCanvas();
+  window.requestAnimationFrame(animationFunction);
+}
+
+function getCanvasPixels(mouseX, mouseY) {
+  const canvas = document.getElementById(drawingCanvasId);
+  const boundingRect = canvas.getBoundingClientRect();
+  const canvasX = mouseX - boundingRect.left;
+  const canvasY = mouseY - boundingRect.top;
+  return {
+    x: ~~((canvasX / canvEdgeLen) * doodleEdge),
+    y: ~~((canvasY / canvEdgeLen) * doodleEdge),
+  };
+}
+
+/**
  * @param {CanvasRenderingContext2D} ctx
  * @param {string} drawing
  */
@@ -259,11 +333,13 @@ function getDoodleItemFromDeleteButton(deleteButton) {
 //#endregion
 
 //#region UI Functions
+
 function initializeDrawingCanvas() {
   testFunctions();
 
   const initialDrawing = generateEmtpyDrawingBinary();
   drawToDrawingCanvas(initialDrawing);
+  addDrawingCanvasListeners();
 
   const eraseCheckBox = document.getElementById('eraseChk');
   eraseCheckBox.addEventListener('change', handleEraseCheckBox);
@@ -298,13 +374,17 @@ function hideDrawingModal() {
 }
 
 /**
- * @param {string} drawing
+ * If no value is passed in, draw to the drawingCanvas with current data-drawing value.
+ * @param {string | undefined} drawing
  */
 function drawToDrawingCanvas(drawing) {
   const drawingCanvas = document.getElementById(drawingCanvasId);
 
-  // Access attribute value using `drawingCanvas.dataset.drawing`
-  drawingCanvas.setAttribute('data-drawing', decompressToBinary(drawing));
+  if (drawing) {
+    drawingCanvas.setAttribute('data-drawing', drawing);
+  } else {
+    drawing = drawingCanvas.dataset.drawing;
+  }
   drawToContext(drawingCanvas.getContext('2d'), drawing);
 }
 
@@ -349,10 +429,20 @@ function renderPosts() {
   }
 }
 
+function addDrawingCanvasListeners() {
+  const cnvElt = document.getElementById('drawingCanvas');
+  cnvElt.addEventListener('mouseup', handleCanvasMouseUp);
+  cnvElt.addEventListener('mousemove', handleCanvasMouseMove);
+  cnvElt.addEventListener('touchmove', handleCanvasTouchMove);
+  // Disable right-click context menu
+  cnvElt.addEventListener('contextmenu', (e) => e.preventDefault());
+}
+
 //#endregion
 
 window.addEventListener('load', async (_) => {
   initializeDrawingCanvas();
   posts = await getPostsAPI();
   renderPosts();
+  window.requestAnimationFrame(animationFunction);
 });
