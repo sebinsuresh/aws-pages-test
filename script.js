@@ -9,6 +9,9 @@
 //#endregion
 
 //#region Global variables
+const drawingModalId = 'drawingModal';
+const drawingCanvasId = 'drawingCanvas';
+
 const baseUrl =
   'https://758js4xuaf.execute-api.us-east-2.amazonaws.com/doodles';
 const canvEdgeLen = 320;
@@ -35,6 +38,8 @@ function handleDrawingModalBackdropClick() {
 }
 
 function handleResetButton() {
+  drawToDrawingCanvas(generateEmtpyDrawingBinary());
+}
 
 /**@param {Event} event */
 function handleEraseCheckBox(event) {
@@ -146,10 +151,18 @@ async function deleteDrawingAPI(doodleItem) {
 //#region Utility functions
 
 /** @returns {string} */
+function generateEmtpyDrawingBinary() {
+  let drawing = '';
+  for (let i = 0; i < doodleEdge * doodleEdge; i++) {
+    drawing += '0';
+  }
+  return drawing;
+}
+
+/** @returns {string} */
 function generateRandomDrawingBinary() {
   let drawing = '';
   for (let i = 0; i < doodleEdge * doodleEdge; i++) {
-    // drawing += "0";
     drawing += Math.random() > 0.5 ? '1' : '0';
   }
   return drawing;
@@ -216,8 +229,7 @@ function drawToContext(ctx, drawing) {
   ctx.fillStyle = '#fff';
   ctx.fillRect(0, 0, canvEdgeLen, canvEdgeLen);
   ctx.fillStyle = '#000';
-  const drawingBinary = decompressToBinary(drawing);
-  for (const [i, letter] of drawingBinary.split('').entries()) {
+  for (const [i, letter] of drawing.split('').entries()) {
     const col = ~~(i % doodleEdge);
     const row = ~~(i / doodleEdge);
 
@@ -250,7 +262,7 @@ function getDoodleItemFromDeleteButton(deleteButton) {
 function initializeDrawingCanvas() {
   testFunctions();
 
-  const initialDrawing = compressToString(generateRandomDrawingBinary());
+  const initialDrawing = generateEmtpyDrawingBinary();
   drawToDrawingCanvas(initialDrawing);
 
   const eraseCheckBox = document.getElementById('eraseChk');
@@ -277,19 +289,19 @@ function initializeDrawingCanvas() {
 
 function showDrawingModal() {
   document.getElementById('drawingModalBackdrop').hidden = false;
-  document.getElementById('drawingModal').hidden = false;
+  document.getElementById(drawingModalId).hidden = false;
 }
 
 function hideDrawingModal() {
   document.getElementById('drawingModalBackdrop').hidden = true;
-  document.getElementById('drawingModal').hidden = true;
+  document.getElementById(drawingModalId).hidden = true;
 }
 
 /**
  * @param {string} drawing
  */
 function drawToDrawingCanvas(drawing) {
-  const drawingCanvas = document.getElementById('drawingCanvas');
+  const drawingCanvas = document.getElementById(drawingCanvasId);
 
   // Access attribute value using `drawingCanvas.dataset.drawing`
   drawingCanvas.setAttribute('data-drawing', decompressToBinary(drawing));
@@ -329,7 +341,7 @@ function renderPosts() {
     canvas.height = canvEdgeLen;
     const ctx = canvas.getContext('2d');
 
-    drawToContext(ctx, post.drawing);
+    drawToContext(ctx, decompressToBinary(post.drawing));
     postContainer.appendChild(canvas);
     postContainer.appendChild(caption);
     postContainer.appendChild(deleteButton);
