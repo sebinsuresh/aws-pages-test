@@ -13,4 +13,3 @@ variable "region" {
   description = "region to deploy the infrastructure"
   default     = "us-east-2"
 }
-
