@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  localstack:
+    container_name: "localstack-aws"
+    image: localstack/localstack:latest
+    restart: always
+    environment:
+      - SERVICES=s3,lambda,dynamodb,apigateway,iam
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+      - LAMBDA_EXECUTOR=docker
+      - LAMBDA_DOCKER_NETWORK=localstack_aws
+    ports:
+      - "53:53"
+      - "53:53/udp"
+      - "443:443"
+      - "4566:4566"
+      - "4571:4571"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - localstack_data:/tmp/localstack
+    networks:
+      - default
+volumes:
+  localstack_data:
+networks:
+  default:
+    name: localstack_aws
