@@ -8,6 +8,12 @@
 # - API Gateway
 # - Cloudwatch maybe for alerts and shutdown
 
+locals {
+  lambda_zip_path = "../backend/lambdas/api/test.zip"
+  lambda_s3_key   = "lambda.zip"
+  lambda_runtime  = "nodejs18.x"
+}
+
 terraform {
   required_version = ">=1.4.6"
 
@@ -39,4 +45,27 @@ resource "aws_dynamodb_table" "doodle-proto-table" {
     name = "createddate"
     type = "S"
   }
+}
+
+resource "aws_s3_object" "lambda_zip" {
+  depends_on = [
+    module.remote_state, # remote-state ensures creation of s3 bucket
+  ]
+  bucket = var.app_bucket
+  key    = local.lambda_s3_key
+  source = local.lambda_zip_path
+}
+
+resource "aws_lambda_function" "doodle_lambda" {
+  role = "TODO"
+
+  depends_on = [
+    module.remote_state, # remote-state ensures creation of s3 bucket
+    aws_dynamodb_table.doodle-proto-table,
+  ]
+  function_name = "doodle_table_crud_lambda"
+  handler       = "module.handler"
+  runtime       = local.lambda_runtime
+  s3_bucket     = var.app_bucket
+  s3_key        = local.lambda_s3_key
 }
