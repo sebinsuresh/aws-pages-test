@@ -31,6 +31,9 @@ function tf_initialize() {
   -backend-config backend-config.local.tfvars \
   -migrate-state
   
+  echo "Creating infrastructure"
+  terraform apply -var-file=terraform.local.tfvars
+  
   echo "Cleaning up"
   rm terraform.tfstate
   rm terraform.tfstate.backup
