@@ -4,7 +4,7 @@ provider "aws" {
   # access_key                  = "mock_access"
   # secret_key                  = "mock_secret"
   # skip_metadata_api_check     = true
-  s3_force_path_style         = var.is_local ? true : null
+  s3_use_path_style           = var.is_local ? true : null
   skip_credentials_validation = var.is_local ? true : null
   skip_requesting_account_id  = var.is_local ? true : null
   endpoints {
