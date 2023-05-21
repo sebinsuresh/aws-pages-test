@@ -1,3 +1,8 @@
+variable "app_bucket" {
+  type        = string
+  description = "s3 bucket name for the project"
+}
+
 variable "aws_region" {
   type        = string
   description = "region to deploy the infrastructure"
