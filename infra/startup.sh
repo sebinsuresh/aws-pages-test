@@ -5,19 +5,21 @@ function tf_initialize() {
   # Don't initialize S3 backend since that doesnt exist yet.
   # Use a local tfstate initially
   mv backend.tf backend.tf.backup
-  terraform init -migrate-state
+  terraform init -migrate-state -auto-approve
   
   # Create S3 bucket and dynamodb table for tfstate
   terraform apply \
   -target module.remote_state \
-  -var-file terraform.local.tfvars
+  -var-file terraform.local.tfvars \
+  -auto-approve
   
   # Migrate tfstate to S3 now
   mv backend.tf.backup backend.tf
   terraform init \
   -backend-config backend-config.tfvars \
   -backend-config backend-config.local.tfvars \
-  -migrate-state
+  -migrate-state \
+  -auto-approve
 }
 
 # tf_initialize
