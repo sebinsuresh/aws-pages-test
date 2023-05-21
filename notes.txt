@@ -1,0 +1,58 @@
+export AWS_ACCESS_KEY_ID="test" && \
+export AWS_SECRET_ACCESS_KEY="test" && \
+export AWS_DEFAULT_REGION="us-east-2"
+
+aws --endpoint-url=http://localhost:4566 lambda list-functions
+
+=========
+
+docker-compose down --volumes && docker-compose up -d
+terraform init -backend-config=backend-config.tfvars -backend-config=backend-config.local.tfvars -reconfigure
+
+aws --endpoint-url=http://localhost:4566 s3api create-bucket --bucket=lambda-api-testing-poc-1
+
+=======
+
+echo 'var.bucket' | terraform console -var-file backend-config.tfvars -compact-warnings
+
+Didn't work:
+echo 'var.bucket' | terraform console -var-file backend-config.tfvars | awk '/Warnings/ {exit} {print}'
+
+=======
+
+aws --endpoint-url=http://localhost:4566 s3api list-buckets
+aws --endpoint-url=http://localhost:4566 s3api list-objects --bucket lambda-api-testing-poc-1
+aws --endpoint-url=http://localhost:4566 s3api put-object --bucket lambda-api-testing-poc-1 --key testkey --body ../README.md
+aws --endpoint-url=http://localhost:4566 s3api put-object --bucket lambda-api-testing-poc-1 --key terraform.tfstate
+aws --endpoint-url=http://localhost:4566 s3api delete-object --bucket lambda-api-testing-poc-1 --key terraform.tfstate
+
+=======
+
+aws --endpoint-url=http://localhost:4566 dynamodb scan \
+    --table-name terraform-state-lock
+	
+aws --endpoint-url=http://localhost:4566 dynamodb scan \
+    --table-name doodle-proto-table
+
+=======
+
+tar --help | grep '  \-a'
+tar -a -c -C ../backend/lambdas/api -f ../backend/lambdas/api/test.zip index.mjs
+
+=======
+
+docker-compose down --volumes && docker-compose up -d
+# rm -rf .terraform
+[ ! -d .terraform ] || find .terraform -type f ! -name "*.exe" -delete
+rm terraform.tfstate
+rm terraform.tfstate.backup
+mv backend.tf.backup backend.tf
+sh startup.sh
+
+mv backend.tf backend.tf.backup
+terraform init -migrate-state
+terraform apply -target module.remote_state -var-file=terraform.local.tfvars
+# terraform apply -target module.remote_state -var-file=terraform.local.tfvars -auto-approve
+mv backend.tf.backup backend.tf
+terraform init -backend-config=backend-config.tfvars -backend-config=backend-config.local.tfvars -migrate-state
+terraform apply -var-file=terraform.local.tfvars
