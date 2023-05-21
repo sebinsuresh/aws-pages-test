@@ -22,7 +22,7 @@ terraform {
 module "remote_state" {
   source         = "./modules/remote-state"
   region         = var.aws_region
-  bucket         = "lambda-api-testing-poc-1"
+  bucket         = var.app_bucket
   dynamodb_table = "terraform-state-lock"
 }
 
