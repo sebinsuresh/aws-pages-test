@@ -1,13 +1,15 @@
 provider "aws" {
   region = var.aws_region
 
-  # skip_metadata_api_check     = true
-  # skip_requesting_account_id  = true
+  # access_key                  = "mock_access"
+  # secret_key                  = "mock_secret"
   # s3_force_path_style         = true
-  # endpoints {
-  #   dynamodb = "http://localhost:4566"
-  #   kinesis  = "http://localhost:4566"
-  #   lambda   = "http://localhost:4566"
-  #   s3       = "http://localhost:4566"
-  # }
+  # skip_metadata_api_check     = true
+  skip_credentials_validation = var.is_local ? true : null
+  skip_requesting_account_id  = var.is_local ? true : null
+  endpoints {
+    dynamodb = var.is_local ? var.localstack_endpoint : null
+    lambda   = var.is_local ? var.localstack_endpoint : null
+    s3       = var.is_local ? var.localstack_endpoint : null
+  }
 }
