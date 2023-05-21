@@ -27,7 +27,8 @@ sh startup.sh
 To shut down and start from scratch:
 
 ```sh
-rm -rf .terraform
+# TODO: What about provider bianries on linux and mac?
+[ ! -d .terraform ] || find .terraform -type f ! -name "*.exe" -delete
 docker-compose down --volumes
 ```
 
