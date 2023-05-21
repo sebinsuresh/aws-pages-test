@@ -2,6 +2,13 @@
 
 # TODO: Make this local vs CI/CD specific by parameter:
 function tf_initialize() {
+  # Set AWS credentials
+  AWS_ACCESS_KEY_ID="$(grep local_accesskey terraform.local.tfvars | grep -o '".*"' | sed 's/"//g')"
+  AWS_SECRET_ACCESS_KEY="$(grep local_secret terraform.local.tfvars | grep -o '".*"' | sed 's/"//g')"
+  export AWS_ACCESS_KEY_ID
+  export AWS_SECRET_ACCESS_KEY
+  export AWS_DEFAULT_REGION="us-east-2"
+  
   # Don't initialize S3 backend since that doesnt exist yet.
   # Use a local tfstate initially
   mv backend.tf backend.tf.backup
