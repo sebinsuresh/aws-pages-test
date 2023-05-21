@@ -9,6 +9,7 @@ Experimenting with Serverless on AWS, Terraform, and Github Actions to create a 
 - Docker
 - Terraform
 - AWS CLI
+- NodeJS v18.16.0 (Use `nvm` on Windows to manage versions)
 - Git Bash on Windows (or any other bash terminal)
 
 ## Instructions
