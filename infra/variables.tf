@@ -9,6 +9,16 @@ variable "is_local" {
   default     = false
 }
 
+variable "local_accesskey" {
+  type        = string
+  description = "local aws access key to be used when deploying locally"
+}
+
+variable "local_secret" {
+  type        = string
+  description = "local aws secret to be used when deploying locally"
+}
+
 variable "localstack_endpoint" {
   type        = string
   description = "localstack endpoint to be used when deploying locally"
