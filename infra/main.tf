@@ -19,10 +19,6 @@ terraform {
   }
 }
 
-# resource "aws_s3_bucket" "projectBucket" {
-#   bucket = var.bucket
-# }
-
 module "remote_state" {
   source         = "./modules/remote-state"
   region         = var.aws_region
