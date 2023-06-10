@@ -10,9 +10,10 @@
 
 locals {
   doodle_lambda_name = "doodle_table_crud_lambda"
+  lambda_code_folder = "../backend/lambdas/api"
   lambda_runtime     = "nodejs18.x"
   lambda_s3_key      = "lambda.zip"
-  lambda_zip_path    = "../backend/lambdas/api/test.zip" # TODO: Gitignore this
+  lambda_zip_path    = "lambdas/test.zip"
 }
 
 terraform {
@@ -48,9 +49,16 @@ resource "aws_dynamodb_table" "doodle-proto-table" {
   }
 }
 
+data "archive_file" "zipit" {
+  type        = "zip"
+  source_dir  = local.lambda_code_folder
+  output_path = local.lambda_zip_path
+}
+
 resource "aws_s3_object" "lambda_zip" {
   depends_on = [
     module.remote_state, # remote-state ensures creation of s3 bucket
+    data.archive_file.zipit,
   ]
   bucket = var.app_bucket
   key    = local.lambda_s3_key
