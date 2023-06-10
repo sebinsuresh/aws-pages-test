@@ -57,6 +57,86 @@ resource "aws_s3_object" "lambda_zip" {
   source = local.lambda_zip_path
 }
 
+resource "aws_iam_role" "lambda_role" {
+  name = "lambda_role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "basic_execution_policy" {
+  name = "basic_execution_policy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "logs:CreateLogGroup"
+        Resource = "arn:aws:logs:*:*:*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:*:log-group:/aws/lambda/${local.doodle_lambda_name}:*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "microservice_execution_policy" {
+  name = "microservice_execution_policy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:Scan",
+          "dynamodb:Query",
+          "dynamodb:UpdateItem"
+        ]
+        Resource = "arn:aws:dynamodb:*:*:table/${aws_dynamodb_table.doodle-proto-table.name}"
+      }
+    ]
+  })
+}
+
+# Attach each policy to the lambda role
+# TODO: Is it possible to use for_each here?
+# resource "aws_iam_role_policy_attachment" "lambda_policies_attachment" {
+#   for_each = toset([
+#     aws_iam_policy.basic_execution_policy.arn,
+#     aws_iam_policy.microservice_execution_policy.arn,
+#   ])
+#   role       = aws_iam_role.lambda_role.name
+#   policy_arn = each.value
+# }
+
+resource "aws_iam_role_policy_attachment" "lambda_policies_attachment1" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = aws_iam_policy.basic_execution_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_policies_attachment2" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = aws_iam_policy.microservice_execution_policy.arn
+}
+
 resource "aws_lambda_function" "doodle_lambda" {
   role = "TODO"
 
