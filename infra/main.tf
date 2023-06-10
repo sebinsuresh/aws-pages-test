@@ -138,14 +138,14 @@ resource "aws_iam_role_policy_attachment" "lambda_policies_attachment2" {
 }
 
 resource "aws_lambda_function" "doodle_lambda" {
-  role = "TODO"
-
   depends_on = [
     module.remote_state, # remote-state ensures creation of s3 bucket
     aws_dynamodb_table.doodle-proto-table,
+    aws_s3_object.lambda_zip,
   ]
-  function_name = "doodle_table_crud_lambda"
+  function_name = local.doodle_lambda_name
   handler       = "module.handler"
+  role          = aws_iam_role.lambda_role.arn
   runtime       = local.lambda_runtime
   s3_bucket     = var.app_bucket
   s3_key        = local.lambda_s3_key
