@@ -9,6 +9,7 @@ provider "aws" {
   s3_use_path_style           = var.is_local ? true : null
   endpoints {
     dynamodb = var.is_local ? var.localstack_endpoint : null
+    iam      = var.is_local ? var.localstack_endpoint : null
     lambda   = var.is_local ? var.localstack_endpoint : null
     s3       = var.is_local ? var.localstack_endpoint : null
   }
