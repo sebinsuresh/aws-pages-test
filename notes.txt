@@ -37,7 +37,23 @@ aws --endpoint-url=http://localhost:4566 dynamodb scan \
 =======
 
 tar --help | grep '  \-a'
-tar -a -c -C ../backend/lambdas/api -f ../backend/lambdas/api/test.zip index.mjs
+
+# This creates an invalid zip file:
+# tar -a -c -C ../backend/lambdas/api -f ../backend/lambdas/api/test.zip index.mjs
+# Using -z with `tar` command (Gzipping) doesn't work either:
+# tar -az -c -C ../backend/lambdas/api -f ../backend/lambdas/api/test.zip index.mjs
+
+# Use `zip` instead - However this is not installed in Windows Git Bash
+# zip ../backend/lambdas/api/test.zip ../backend/lambdas/api/index.mjs
+# Or redirect output using `-` so it will overwrite?
+# zip - ../backend/lambdas/api/index.mjs >../backend/lambdas/api/test.zip
+
+# Use Git archive to create a zip without much success:
+# git archive --format=zip --output=../backend/lambdas/api/test.zip main backend/lambdas/api/index.mjs
+# git archive --format=zip --output=test.zip "$(git rev-parse --abbrev-ref HEAD)" backend/lambdas/api/index.mjs
+# git archive --format=zip -o test.zip HEAD:backend/lambdas/api
+
+Just use archive from terraform
 
 =======
 
