@@ -32,7 +32,9 @@ function tf_initialize() {
   -migrate-state
   
   echo "Creating infrastructure"
-  terraform apply -var-file=terraform.local.tfvars
+  terraform apply \
+  -var-file=terraform.local.tfvars \
+  -auto-approve
   
   echo "Cleaning up"
   rm terraform.tfstate
