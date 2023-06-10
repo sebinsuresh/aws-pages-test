@@ -9,9 +9,10 @@
 # - Cloudwatch maybe for alerts and shutdown
 
 locals {
-  lambda_zip_path = "../backend/lambdas/api/test.zip"
-  lambda_s3_key   = "lambda.zip"
-  lambda_runtime  = "nodejs18.x"
+  doodle_lambda_name = "doodle_table_crud_lambda"
+  lambda_runtime     = "nodejs18.x"
+  lambda_s3_key      = "lambda.zip"
+  lambda_zip_path    = "../backend/lambdas/api/test.zip" # TODO: Gitignore this
 }
 
 terraform {
