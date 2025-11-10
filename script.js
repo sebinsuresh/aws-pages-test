@@ -273,15 +273,28 @@ function animationFunction() {
   window.requestAnimationFrame(animationFunction);
 }
 
+/**
+ * @param {number} mouseX
+ * @param {number} mouseY
+ */
 function getCanvasPixels(mouseX, mouseY) {
   const canvas = document.getElementById(drawingCanvasId);
   const boundingRect = canvas.getBoundingClientRect();
-  const canvasX = mouseX - boundingRect.left;
-  const canvasY = mouseY - boundingRect.top;
+  const canvasX = clamp(mouseX - boundingRect.left, 0, canvEdgeLen - 1);
+  const canvasY = clamp(mouseY - boundingRect.top, 0, canvEdgeLen - 1);
   return {
     x: ~~((canvasX / canvEdgeLen) * doodleEdge),
     y: ~~((canvasY / canvEdgeLen) * doodleEdge),
   };
+}
+
+/**
+ * @param {number} val
+ * @param {number} min
+ * @param {number} max
+ */
+function clamp(val, min, max) {
+  return Math.min(Math.max(val, min), max);
 }
 
 /**
